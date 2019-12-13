@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Fiona Mac" />
+    <meta name="description" content="Describe your website">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>SDS project 1</title>
+    <meta name="generator" content="Hugo 0.61.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="/blog/">BLOG</a></li>
+        
+        <li><a href="/projects/">PROJECTS</a></li>
+        
+        <li><a href="/resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="/project1/">SDS project 1</a></strong>
+          </h3>
+        </div>
+        <div class="blog-title">
+          <h4>
+          January 1, 0001
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<p>Steps 1 and 2: Joining and reshaping data</p>
+<p>##I decided to download two datasets from Austin.gov public access data. One shows emercency responses in Austin and in the rest of Travis county, the other shows average costs of utility bills and energy usage in kWh. They share observation dates, which I will join them by (one date for month-year). I noticed as I started the project that for the emergency dataset, Austin sometimes has more emergency responses listed than Travis county, so I beleieve that it’s recording emergencies in Austin, and emergencies in the rest of Travis county (not Austin), but it’s not totally clear to me from the dataset description.</p>
+<p>##I chose these datasets because I thought it would be interesting to see how two things that seem unrelated (emergency responses and energy use) correlated. I was particularly interested in the relationship between emergency responses and energy use because I could see ways a single third factor might affect them, for example maybe there’s more emergencies and higher energy use in summer months.</p>
+<p>#Step one and two
+####First I’m going to join the datasets, and then I’m going to reshape the Date factor to separate month and year into different columns. I intially did an inner_join and noticed that I only lost six observations from the smaller of the two datasets “Emergency”, so I decided to keep that join. The larger dataset, “Electric” lost substantially more observations, but since I’m joining by exact dates I think it strengthens the comparison, even if it might be a less nuanced ananlysis of energy-use data alone.</p>
+<pre class="r"><code>##Loading data 
+setwd(&quot;~/SDS project1&quot;)
+library(dplyr)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ───────────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.2.1          ✓ purrr   0.3.3     
+## ✓ tibble  2.1.3          ✓ stringr 1.4.0     
+## ✓ tidyr   1.0.0.9000     ✓ forcats 0.4.0     
+## ✓ readr   1.3.1</code></pre>
+<pre><code>## ── Conflicts ──────────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(ggplot2)
+library(ggridges)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;ggridges&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:ggplot2&#39;:
+## 
+##     scale_discrete_manual</code></pre>
+<pre class="r"><code>Emergency&lt;-read.csv(&quot;~/SDS project1/EMS_-_Ambulance_Responses_by_Month.csv&quot;)
+nrow(Emergency)</code></pre>
+<pre><code>## [1] 108</code></pre>
+<pre class="r"><code>glimpse(Emergency)</code></pre>
+<pre><code>## Observations: 108
+## Variables: 21
+## $ Month.Key                                        &lt;int&gt; 201010, 201011, 2010…
+## $ Month.Year                                       &lt;fct&gt; 10/01/2010 12:00:00 …
+## $ Total.System.Responses                           &lt;fct&gt; &quot;8,773&quot;, &quot;7,693&quot;, &quot;8…
+## $ Total.Austin.Responses                           &lt;fct&gt; &quot;7,424&quot;, &quot;6,421&quot;, &quot;6…
+## $ Total.Travis.County.Responses                    &lt;fct&gt; &quot;1,333&quot;, &quot;1,246&quot;, &quot;1…
+## $ Other.Area.Responses                             &lt;int&gt; 16, 26, 33, 19, 15, …
+## $ Combined.City.and.County.Responses               &lt;fct&gt; &quot;8,757&quot;, &quot;7,667&quot;, &quot;8…
+## $ COA.Unit.Responses.into.TC                       &lt;int&gt; 648, 579, 584, 560, …
+## $ TC.Unit.Responses.into.COA                       &lt;int&gt; 268, 196, 206, 228, …
+## $ Percent.COA.Responses.by.TC                      &lt;dbl&gt; 3.609914, 3.052484, …
+## $ Percent.TC.Responses.by.COA                      &lt;dbl&gt; 48.61215, 46.46870, …
+## $ Other.Area.Responses.by.COA.Units                &lt;int&gt; 15, 22, 30, 16, 13, …
+## $ Other.Area.Responses.by.TC.Units                 &lt;int&gt; 1, 4, 3, 3, 2, 4, 4,…
+## $ COA.Unit.Responses.into.COA.or.TC                &lt;fct&gt; &quot;7,804&quot;, &quot;6,804&quot;, &quot;7…
+## $ TC.Unit.Responses.into.COA.or.TC                 &lt;fct&gt; &quot;953&quot;, &quot;863&quot;, &quot;917&quot;,…
+## $ Percent.of.COA.Responses.by.COA.Units            &lt;dbl&gt; 96.39009, 96.94752, …
+## $ Percent.of.TC.Responses.by.TC.Units              &lt;dbl&gt; 51.38785, 53.53130, …
+## $ Percent.of.Other.Area.Responses.by.COA.Units     &lt;dbl&gt; 93.75000, 84.61538, …
+## $ Percent.of.Other.Area.Responses.by.TC.Units      &lt;dbl&gt; 6.250000, 15.384615,…
+## $ Percent.of.Responses.into.COA.or.TC.by.COA.Units &lt;dbl&gt; 89.11728, 88.74397, …
+## $ Percent.of.Responses.into.COA.or.TC.by.TC.Units  &lt;dbl&gt; 10.88272, 11.25603, …</code></pre>
+<pre class="r"><code>##Intially has 108 values 
+Electric&lt;-read.csv(&quot;~/SDS project1/Residential_Average_Monthly_kWh_and_Bills.csv&quot;)
+nrow(Electric)</code></pre>
+<pre><code>## [1] 231</code></pre>
+<pre class="r"><code>glimpse(Electric)</code></pre>
+<pre><code>## Observations: 231
+## Variables: 4
+## $ Date                    &lt;fct&gt; 03/01/2019 12:00:00 AM, 02/01/2019 12:00:00 A…
+## $ Average.kWh             &lt;fct&gt; &quot;658&quot;, &quot;707&quot;, &quot;761&quot;, &quot;663&quot;, &quot;685&quot;, &quot;819&quot;, &quot;1,…
+## $ Fuel.Charge..Cents.kWh. &lt;dbl&gt; 2.895, 2.895, 2.895, 2.895, 2.895, 2.936, 3.0…
+## $ Average.Bill            &lt;dbl&gt; 65.13, 70.38, 76.13, 65.67, 68.01, 82.41, 131…</code></pre>
+<pre class="r"><code>##Intially 231
+Emergency$Date&lt;-Emergency$Month.Year##I need the &quot;date&quot; factor to be under the same name, so I can join
+Data&lt;-inner_join(Emergency,Electric, by=&quot;Date&quot;)</code></pre>
+<pre><code>## Warning: Column `Date` joining factors with different levels, coercing to
+## character vector</code></pre>
+<pre class="r"><code>nrow(Data)</code></pre>
+<pre><code>## [1] 102</code></pre>
+<pre class="r"><code>##102 after an innerjoin, so our smaller dataset (Emergency) actually only lost 6 datapoints. 
+##I&#39;m going to pull the variables I&#39;m interested using &quot;select&quot;. 
+Data&lt;-Data%&gt;%select(Total.Austin.Responses,Total.Travis.County.Responses,Average.kWh,Average.Bill,Month.Key) 
+##Then I&#39;m going to use &quot;separate&quot; to split the date column, because I&#39;m splitting a continous string of numbers rather than two seperate factors (example 102016 instead of Oct.2016)
+Data2&lt;-Data%&gt;%separate(Month.Key, c(paste(&quot;Y&quot;, LETTERS[1:2],sep=&quot;&quot;)),sep=4)
+##I&#39;ll also use mutate up here, to rename those new factors 
+Data3&lt;-Data2%&gt;%mutate(year=YA, month=YB)%&gt;%select(-YA,-YB)
+glimpse(Data3)</code></pre>
+<pre><code>## Observations: 102
+## Variables: 6
+## $ Total.Austin.Responses        &lt;fct&gt; &quot;7,424&quot;, &quot;6,421&quot;, &quot;6,737&quot;, &quot;6,946&quot;, &quot;6,…
+## $ Total.Travis.County.Responses &lt;fct&gt; &quot;1,333&quot;, &quot;1,246&quot;, &quot;1,295&quot;, &quot;1,193&quot;, &quot;1,…
+## $ Average.kWh                   &lt;fct&gt; &quot;946&quot;, &quot;696&quot;, &quot;736&quot;, &quot;862&quot;, &quot;884&quot;, &quot;701…
+## $ Average.Bill                  &lt;dbl&gt; 93.18, 61.54, 65.45, 73.01, 75.04, 58.1…
+## $ year                          &lt;chr&gt; &quot;2010&quot;, &quot;2010&quot;, &quot;2010&quot;, &quot;2011&quot;, &quot;2011&quot;,…
+## $ month                         &lt;chr&gt; &quot;10&quot;, &quot;11&quot;, &quot;12&quot;, &quot;01&quot;, &quot;02&quot;, &quot;03&quot;, &quot;04…</code></pre>
+<p>Part 3: Summary statistics
+##Now I have my data joined, the colums that I want to look at in their own dataset, and the date separated into two columns (month and year) which I can group by separately.
+##I’m going to use dplyr functions (group_by, filter, select, mutate, arrange, summarize ) To give the following summary statistics.</p>
+<p>##Mean overall, grouped by year, month, and grouped by year + filtered for January/July, SD overall and grouped by year, Variance overall and grouped by year and correlation for numeric responses (10 total responses)
+##First, I’m going to tell my dataset which things are factors, and which are numeric. I’m going to treat month and year as factors (even though their values ARE numbers), and average bill, average kWh, responses in Austin, and responses in Travis are numeric. I’m also going to create a varaible called “prop” that’s the proportion of Austin responses to Travis responses, and one called “cost” that shows average bill/average kWh (maybe some years/months, you pay more or less per unit of energy). I’m going to make one more colum called “maybe” that is Austin responses/average bills, just to see if there’s a relationship between emergency responses and energy costs.</p>
+<pre class="r"><code>##Telling the dataset what&#39;s a factor and what&#39;s numeric 
+Data3$Total.Austin.Responses=as.numeric(Data3$Total.Austin.Responses)
+is.numeric(Data3$Total.Austin.Responses)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>Data3$Total.Travis.County.Responses=as.numeric(Data3$Total.Travis.County.Response)
+is.numeric(Data3$Total.Travis.County.Responses)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>Data3$Average.kWh=as.numeric(Data3$Average.kWh)
+is.numeric(Data3$Average.kWh)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>Data3$Average.Bill=as.numeric(Data3$Average.Bill)
+is.numeric(Data3$Average.Bill)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>Data3$year=as.factor(Data3$year)
+is.factor(Data3$year)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>Data3$month=as.factor(Data3$month)
+is.factor(Data3$month)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>##Cool, my factors are factors, my response variables are numeric. Now I&#39;m going to create three more colums with mutate. 
+Data3&lt;-Data3%&gt;%mutate(prop=Total.Austin.Responses/Total.Travis.County.Responses)
+Data3&lt;-Data3%&gt;%mutate(cost=Average.Bill/Average.kWh)
+Data3&lt;-Data3%&gt;%mutate(maybe=Total.Austin.Responses/Average.Bill)</code></pre>
+<div id="summary-statistics" class="section level2">
+<h2>Summary statistics</h2>
+<p>###Means</p>
+<pre class="r"><code>##Overall means
+Data3%&gt;%summarize(mean_Austin=mean(Total.Austin.Responses), mean_Travis=mean(Total.Travis.County.Responses), mean_bill=mean(Average.Bill), mean_Kwh=mean(Average.kWh), mean_prop=mean(prop), mean_cost=mean(cost))%&gt;%arrange(desc(mean_Austin))%&gt;%print()</code></pre>
+<pre><code>##   mean_Austin mean_Travis mean_bill mean_Kwh mean_prop mean_cost
+## 1    52.58824    54.68627  91.47422 104.6078  2.226742  1.729309</code></pre>
+<pre class="r"><code>##Means grouped by year 
+Data3%&gt;%group_by(year)%&gt;%summarize(mean_Austin=mean(Total.Austin.Responses), mean_Travis=mean(Total.Travis.County.Responses), mean_bill=mean(Average.Bill), mean_Kwh=mean(Average.kWh), mean_prop=mean(prop), mean_cost=mean(cost))%&gt;%arrange(desc(mean_Austin))%&gt;%print()</code></pre>
+<pre><code>## # A tibble: 10 x 7
+##    year  mean_Austin mean_Travis mean_bill mean_Kwh mean_prop mean_cost
+##    &lt;fct&gt;       &lt;dbl&gt;       &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+##  1 2016        83.2         90.7      89.1    100.      0.915     1.76 
+##  2 2018        72.2         10.2      90.9     86.8    11.7       2.15 
+##  3 2017        70.2         57.3      85.1     94.8     1.88      1.79 
+##  4 2015        62.2         85.2      98.2    111.      0.731     1.75 
+##  5 2019        56.3         43        70.5    115       3.68      0.625
+##  6 2014        54.8         69        97.5    114.      0.787     1.66 
+##  7 2013        37.9         54.2      95.1     96       0.699     2.42 
+##  8 2012        34.1         42.6      90.2    102.      0.794     1.62 
+##  9 2011        16.1         37        95.6    120.      0.426     1.26 
+## 10 2010         8.67        31.3      73.4    145       0.265     0.511</code></pre>
+<pre class="r"><code>##Means grouped by month
+Data3%&gt;%group_by(month)%&gt;%summarize(mean_Austin=mean(Total.Austin.Responses), mean_Travis=mean(Total.Travis.County.Responses), mean_bill=mean(Average.Bill), mean_Kwh=mean(Average.kWh), mean_prop=mean(prop), mean_cost=mean(cost))%&gt;%arrange(desc(mean_Austin))%&gt;%print()</code></pre>
+<pre><code>## # A tibble: 12 x 7
+##    month mean_Austin mean_Travis mean_bill mean_Kwh mean_prop mean_cost
+##    &lt;fct&gt;       &lt;dbl&gt;       &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+##  1 05           72.6        66.9      71.8    134.       1.56     0.547
+##  2 06           66.9        56.8     114.     104.       2.80     4.21 
+##  3 10           61.9        54.1      88.8    182        1.59     0.488
+##  4 03           59.8        54        61.5     96.3      2.10     0.656
+##  5 09           59.5        60.5     143.      36        1.82     4.72 
+##  6 08           56.6        56.4     152.      48.9      3.50     3.32 
+##  7 04           56          57.9      60.0     94        1.83     0.656
+##  8 07           53.9        63       141.      34.5      1.10     4.73 
+##  9 01           42.9        47.8      81.6    167.       1.42     0.491
+## 10 12           42.3        51        64.7    108.       2.06     0.619
+## 11 11           35.1        44.7      65.6    114.       2.62     0.586
+## 12 02           29.1        47        67.5    117.       4.24     0.600</code></pre>
+<pre class="r"><code>##Means grouped by year and filtered for July 
+Data3%&gt;%group_by(year,month)%&gt;%summarize(mean_Austin=mean(Total.Austin.Responses), mean_Travis=mean(Total.Travis.County.Responses), mean_bill=mean(Average.Bill), mean_Kwh=mean(Average.kWh), mean_prop=mean(prop), mean_cost=mean(cost))%&gt;%arrange(desc(mean_Austin))%&gt;%filter(month==&quot;07&quot;)%&gt;%print()</code></pre>
+<pre><code>## # A tibble: 8 x 8
+## # Groups:   year [8]
+##   year  month mean_Austin mean_Travis mean_bill mean_Kwh mean_prop mean_cost
+##   &lt;fct&gt; &lt;fct&gt;       &lt;dbl&gt;       &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+## 1 2016  07             90          97      150.       34    0.928       4.40
+## 2 2018  07             81          23      126.       23    3.52        5.47
+## 3 2017  07             75          63      131.       31    1.19        4.24
+## 4 2014  07             71          73      144.       22    0.973       6.55
+## 5 2013  07             51          61      152.       37    0.836       4.10
+## 6 2012  07             41          47      136.       41    0.872       3.31
+## 7 2011  07             21          45      148.       69    0.467       2.14
+## 8 2015  07              1          95      145.       19    0.0105      7.62</code></pre>
+<pre class="r"><code>##Means grouped by year and filtered for January
+Data3%&gt;%group_by(year,month)%&gt;%summarize(mean_Austin=mean(Total.Austin.Responses), mean_Travis=mean(Total.Travis.County.Responses), mean_bill=mean(Average.Bill), mean_Kwh=mean(Average.kWh), mean_prop=mean(prop), mean_cost=mean(cost))%&gt;%arrange(desc(mean_Austin))%&gt;%filter(month==&quot;01&quot;)%&gt;%print()</code></pre>
+<pre><code>## # A tibble: 9 x 8
+## # Groups:   year [9]
+##   year  month mean_Austin mean_Travis mean_bill mean_Kwh mean_prop mean_cost
+##   &lt;fct&gt; &lt;fct&gt;       &lt;dbl&gt;       &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+## 1 2018  01             86          17      89.7      177     5.06      0.507
+## 2 2017  01             76          94      76.2      144     0.809     0.530
+## 3 2016  01             54          77      75.4      147     0.701     0.513
+## 4 2014  01             44          64      93.7      191     0.688     0.491
+## 5 2019  01             43          12      76.1      137     3.58      0.556
+## 6 2015  01             38          78      93.0      187     0.487     0.497
+## 7 2013  01             24          38      83.6      181     0.632     0.462
+## 8 2012  01             12          29      74.0      173     0.414     0.428
+## 9 2011  01              9          21      73.0      168     0.429     0.435</code></pre>
+<pre class="r"><code>##Neat, it looks like some of the responses were really different in the past 7 years in January, but are generally increasing. </code></pre>
+<p>###SD</p>
+<pre class="r"><code>##Overall SDs
+Data3%&gt;%summarize(sd_Austin=sd(Total.Austin.Responses), sd_Travis=sd(Total.Travis.County.Responses), sd_bill=sd(Average.Bill), sd_Kwh=sd(Average.kWh), sd_prop=sd(prop), sd_cost=sd(cost))%&gt;%arrange(desc(sd_Austin))</code></pre>
+<pre><code>##   sd_Austin sd_Travis  sd_bill   sd_Kwh  sd_prop  sd_cost
+## 1   29.7692  29.05372 34.41889 54.54205 4.654488 2.247368</code></pre>
+<pre class="r"><code>##SD grouped by year 
+Data3%&gt;%group_by(year)%&gt;%summarize(sd_Austin=sd(Total.Austin.Responses), sd_Travis=sd(Total.Travis.County.Responses), sd_bill=sd(Average.Bill), sd_Kwh=sd(Average.kWh), sd_prop=sd(prop), sd_cost=mean(cost))%&gt;%arrange(desc(sd_Austin))</code></pre>
+<pre><code>## # A tibble: 10 x 7
+##    year  sd_Austin sd_Travis sd_bill sd_Kwh sd_prop sd_cost
+##    &lt;fct&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+##  1 2015      38.4      11.8    39.7    59.3   0.420   1.75 
+##  2 2019      32.1      52.8     5.50   23.6   3.42    0.625
+##  3 2017      25.2      29.3    28.4    55.6   1.50    1.79 
+##  4 2018      18.7       7.37   30.4    53.1   8.91    2.15 
+##  5 2014      17.2      14.7    37.6    60.0   0.179   1.66 
+##  6 2016      15.2       8.99   37.3    57.1   0.130   1.76 
+##  7 2012      14.8       9.85   33.4    54.5   0.328   1.62 
+##  8 2013      14.7      13.7    41.9    58.2   0.219   2.42 
+##  9 2011       6.47     10.2    38.2    53.2   0.105   1.26 
+## 10 2010       5.51      4.51   17.2    40.4   0.131   0.511</code></pre>
+<p>###Var</p>
+<pre class="r"><code>##Var overall
+Data3%&gt;%summarize(var_Austin=var(Total.Austin.Responses), var_Travis=var(Total.Travis.County.Responses), var_bill=var(Average.Bill), var_Kwh=var(Average.kWh), var_prop=var(prop), var_cost=var(cost))%&gt;%arrange(desc(var_Austin))</code></pre>
+<pre><code>##   var_Austin var_Travis var_bill  var_Kwh var_prop var_cost
+## 1    886.205   844.1184  1184.66 2974.835 21.66426 5.050662</code></pre>
+<pre class="r"><code>##Var grouped by year 
+Data3%&gt;%group_by(year)%&gt;%summarize(var_Austin=var(Total.Austin.Responses), var_Travis=var(Total.Travis.County.Responses), var_bill=var(Average.Bill), var_Kwh=var(Average.kWh), var_prop=var(prop), var_cost=var(cost))%&gt;%arrange(desc(var_Austin))</code></pre>
+<pre><code>## # A tibble: 10 x 7
+##    year  var_Austin var_Travis var_bill var_Kwh var_prop var_cost
+##    &lt;fct&gt;      &lt;dbl&gt;      &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+##  1 2015      1476.       140.    1578.    3518.   0.177   5.30   
+##  2 2019      1033.      2791       30.3    559   11.7     0.00768
+##  3 2017       634.       861.     806.    3091.   2.26    5.24   
+##  4 2018       349.        54.4    926.    2815.  79.4     5.68   
+##  5 2014       297.       216.    1414.    3605.   0.0321  4.24   
+##  6 2016       231.        80.8   1389.    3259.   0.0169  4.80   
+##  7 2012       218.        97.0   1113.    2973.   0.107   3.09   
+##  8 2013       216.       187.    1753.    3390.   0.0481 14.4    
+##  9 2011        41.9      104.    1456.    2827.   0.0109  1.87   
+## 10 2010        30.3       20.3    298.    1629    0.0172  0.00113</code></pre>
+<p>###Cor
+##Showing covariance and correlation, I’m dropping the columns I made because they’re made from two other variables (so they’ll be related) and I think it could get noisy</p>
+<pre class="r"><code>Data3%&gt;%select(-prop,-cost,-maybe)%&gt;%select_if(is.numeric)%&gt;%scale%&gt;%cov%&gt;%round(2)</code></pre>
+<pre><code>##                               Total.Austin.Responses
+## Total.Austin.Responses                          1.00
+## Total.Travis.County.Responses                   0.30
+## Average.kWh                                    -0.10
+## Average.Bill                                    0.09
+##                               Total.Travis.County.Responses Average.kWh
+## Total.Austin.Responses                                 0.30       -0.10
+## Total.Travis.County.Responses                          1.00       -0.01
+## Average.kWh                                           -0.01        1.00
+## Average.Bill                                           0.13       -0.48
+##                               Average.Bill
+## Total.Austin.Responses                0.09
+## Total.Travis.County.Responses         0.13
+## Average.kWh                          -0.48
+## Average.Bill                          1.00</code></pre>
+<p>Part 4, Visualizations</p>
+<p>##We’re going to look at some visuals now. I’m going to make some plots looking at how the vairables I made “cost” which is realative bill/kWh, “prop” the proportion of Austin to Travis county emergency responses, and “maybe” the average austin repsones/ average energy bills, vary when grouped by month and year. I’ll only include plots that show interesting results.</p>
+<pre class="r"><code>library(ggridges)
+Data3%&gt;%ggplot(aes(cost,y=month, fill=month))+geom_density_ridges(quantile_lines=TRUE, quantiles=2)</code></pre>
+<pre><code>## Picking joint bandwidth of 0.403</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<pre class="r"><code>##Neat! It looks like energy is more expsensive (less bang for your buck) in the summer (July, August, September). If it&#39;s set up right, cost shouldn&#39;t reflect the average PRICE (which is the bill variable) but rather price PER UNIT of energy. 
+
+##Let&#39;s do a similar figure for prop, the proportion of Austin vs Travis county emergency responses by YEAR
+Data3%&gt;%ggplot(aes(prop,y=year, fill=year))+geom_density_ridges(quantile_lines=TRUE, quantiles=2)</code></pre>
+<pre><code>## Picking joint bandwidth of 0.712</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-7-2.png" width="672" /></p>
+<pre class="r"><code>##So most years, the realative proportion of emergency responses IN austin were the same, but 2018 and 2019 have a slightly different pattern. As a note, not all 12 months are represented in each year of these figures. 
+
+##Last one for Maybe. Let&#39;s see if electric bills and emergency responses have a realtionship 
+Data3%&gt;%ggplot(aes(maybe,y=year, fill=year))+geom_density_ridges(quantile_lines=TRUE, quantiles=2)</code></pre>
+<pre><code>## Picking joint bandwidth of 0.14</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-7-3.png" width="672" /></p>
+<pre class="r"><code>##Cool! Different years the relationship between electric bills and emergency responses have been pretty different in terms of their proportions and distributions. 
+
+##Checking &quot;maybe&quot; affects by month
+Data3%&gt;%ggplot(aes(maybe,y=month, fill=month))+geom_density_ridges(quantile_lines=TRUE, quantiles=2)</code></pre>
+<pre><code>## Picking joint bandwidth of 0.189</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-7-4.png" width="672" /></p>
+<pre class="r"><code>##Things are kinda the same, but maybe something in march/april/may has a slightly different relationship! </code></pre>
+<p>#Step 5, PCA Analysis
+##I’m going to run PCA on my numeric factors (not including the new variables that I created with mutate)
+##I’m going to pick the PCAs that will allow the variation to be over 80% explained.</p>
+<pre class="r"><code>###PCA Analysis 
+DataPCA&lt;-Data3%&gt;%select(-cost,-maybe,-prop)
+PCA_try&lt;-DataPCA%&gt;%select_if(is.numeric)%&gt;%scale()
+PCA_list&lt;-rownames(PCA_try)
+PCA_3&lt;-princomp(PCA_try)
+names(PCA_3)##So far it looks like what we&#39;d expect \</code></pre>
+<pre><code>## [1] &quot;sdev&quot;     &quot;loadings&quot; &quot;center&quot;   &quot;scale&quot;    &quot;n.obs&quot;    &quot;scores&quot;   &quot;call&quot;</code></pre>
+<pre class="r"><code>summary(PCA_3, loadings=T)</code></pre>
+<pre><code>## Importance of components:
+##                          Comp.1    Comp.2    Comp.3    Comp.4
+## Standard deviation     1.250023 1.0912905 0.8452801 0.7020070
+## Proportion of Variance 0.394507 0.3006765 0.1803932 0.1244233
+## Cumulative Proportion  0.394507 0.6951835 0.8755767 1.0000000
+## 
+## Loadings:
+##                               Comp.1 Comp.2 Comp.3 Comp.4
+## Total.Austin.Responses         0.376  0.582  0.703  0.160
+## Total.Travis.County.Responses  0.342  0.632 -0.650 -0.248
+## Average.kWh                   -0.592  0.407 -0.174  0.674
+## Average.Bill                   0.625 -0.310 -0.232  0.677</code></pre>
+<pre class="r"><code>##So we&#39;ve got a starting point! Now we can figure out how much to keep 
+
+Eiggy&lt;-PCA_3$sdev^2
+Varr&lt;-round(Eiggy/sum(Eiggy),2) 
+
+ggplot()+geom_bar(aes(y=Varr,x=1:4, fill=Varr),stat=&quot;identity&quot;)+geom_path(aes(y=Varr,x=1:4))+
+scale_y_continuous(labels = scales::percent)+
+scale_x_continuous(breaks=1:10)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<pre class="r"><code>##I&#39;m going to pick the PCAs that will allow is to be over 80% explained, and drop component 4 from the analysis. I&#39;ll look at the summary again
+
+summary(PCA_3, loadings=T)</code></pre>
+<pre><code>## Importance of components:
+##                          Comp.1    Comp.2    Comp.3    Comp.4
+## Standard deviation     1.250023 1.0912905 0.8452801 0.7020070
+## Proportion of Variance 0.394507 0.3006765 0.1803932 0.1244233
+## Cumulative Proportion  0.394507 0.6951835 0.8755767 1.0000000
+## 
+## Loadings:
+##                               Comp.1 Comp.2 Comp.3 Comp.4
+## Total.Austin.Responses         0.376  0.582  0.703  0.160
+## Total.Travis.County.Responses  0.342  0.632 -0.650 -0.248
+## Average.kWh                   -0.592  0.407 -0.174  0.674
+## Average.Bill                   0.625 -0.310 -0.232  0.677</code></pre>
+<pre class="r"><code>##Component 4 is &quot;average.bills&quot; 
+##I&#39;m going to plot the two strongest  components, Total Austin Responses and Total travis county responses.
+
+ggplot()+geom_point(aes(PCA_3$scores[,1], PCA_3$scores[,2]), color=&quot;green&quot;)+xlab(&quot;Austin.Responses&quot;)+ylab(&quot;Travis.County.Responses&quot;)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-8-2.png" width="672" /></p>
+<pre class="r"><code>##It looks like Austin responses and Travis responses form some pretty distinct groups in the data! </code></pre>
+</div>
+
+              <hr>
+              <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div>
+            </div>
+          </div>
+          <hr>
+        <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+        </div>
+      </div>
+      
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/js/docs.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

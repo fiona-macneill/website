@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1576267938255.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1329677737",
+    "id" : "C8726913",
+    "lastKnownWriteTime" : 1576267947,
+    "last_content_update" : 1576267947262,
+    "path" : "~/Desktop/FionaHugo/config.toml",
+    "project_path" : "config.toml",
+    "properties" : {
+        "cursorPosition" : "14,21",
+        "scrollLine" : "4"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "toml"
+}

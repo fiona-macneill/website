@@ -1,0 +1,193 @@
+---
+title: "SDS project 1"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval="hide")
+```
+
+Steps 1 and 2: Joining and reshaping data 
+
+##I decided to download two datasets from Austin.gov public access data. One shows emercency responses in Austin and in the rest of Travis county, the other shows average costs of utility bills and energy usage in kWh. They share observation dates, which I will join them by (one date for month-year). I noticed as I started the project that for the emergency dataset, Austin sometimes has more emergency responses listed than Travis county, so I beleieve that it's recording emergencies in Austin, and emergencies in the rest of Travis county (not Austin), but it's not totally clear to me from the dataset description. 
+
+##I chose these datasets because I thought it would be interesting to see how two things that seem unrelated (emergency responses and energy use) correlated. I was particularly interested in the relationship between emergency responses and energy use because I could see ways a single third factor might affect them, for example maybe there's more emergencies and higher energy use in summer months. 
+
+#Step one and two
+####First I'm going to join the datasets, and then I'm going to reshape the Date factor to separate month and year into different columns. I intially did an inner_join and noticed that I only lost six observations from the smaller of the two datasets "Emergency", so I decided to keep that join. The larger dataset, "Electric" lost substantially more observations, but since I'm joining by exact dates I think it strengthens the comparison, even if it might be a less nuanced ananlysis of energy-use data alone. 
+```{r}
+##Loading data 
+setwd("~/SDS project1")
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(ggridges)
+Emergency<-read.csv("~/SDS project1/EMS_-_Ambulance_Responses_by_Month.csv")
+nrow(Emergency)
+glimpse(Emergency)
+##Intially has 108 values 
+Electric<-read.csv("~/SDS project1/Residential_Average_Monthly_kWh_and_Bills.csv")
+nrow(Electric)
+glimpse(Electric)
+##Intially 231
+Emergency$Date<-Emergency$Month.Year##I need the "date" factor to be under the same name, so I can join
+Data<-inner_join(Emergency,Electric, by="Date")
+nrow(Data)
+##102 after an innerjoin, so our smaller dataset (Emergency) actually only lost 6 datapoints. 
+##I'm going to pull the variables I'm interested using "select". 
+Data<-Data%>%select(Total.Austin.Responses,Total.Travis.County.Responses,Average.kWh,Average.Bill,Month.Key) 
+##Then I'm going to use "separate" to split the date column, because I'm splitting a continous string of numbers rather than two seperate factors (example 102016 instead of Oct.2016)
+Data2<-Data%>%separate(Month.Key, c(paste("Y", LETTERS[1:2],sep="")),sep=4)
+##I'll also use mutate up here, to rename those new factors 
+Data3<-Data2%>%mutate(year=YA, month=YB)%>%select(-YA,-YB)
+glimpse(Data3)
+```
+Part 3: Summary statistics 
+##Now I have my data joined, the colums that I want to look at in their own dataset, and the date separated into two columns (month and year) which I can group by separately. 
+##I'm going to use dplyr functions (group_by, filter, select, mutate, arrange, summarize ) To give the following summary statistics. 
+
+##Mean overall, grouped by year, month, and grouped by year + filtered for January/July, SD overall and grouped by year, Variance overall and grouped by year and correlation for numeric responses (10 total responses)
+##First, I'm going to tell my dataset which things are factors, and which are numeric. I'm going to treat month and year as factors (even though their values ARE numbers), and average bill, average kWh, responses in Austin, and responses in Travis are numeric. I'm also going to create a varaible called "prop" that's the proportion of Austin responses to Travis responses, and one called "cost" that shows average bill/average kWh (maybe some years/months, you pay more or less per unit of energy). I'm going to make one more colum called "maybe" that is Austin responses/average bills, just to see if there's a relationship between emergency responses and energy costs. 
+
+
+```{r}
+##Telling the dataset what's a factor and what's numeric 
+Data3$Total.Austin.Responses=as.numeric(Data3$Total.Austin.Responses)
+is.numeric(Data3$Total.Austin.Responses)
+
+
+Data3$Total.Travis.County.Responses=as.numeric(Data3$Total.Travis.County.Response)
+is.numeric(Data3$Total.Travis.County.Responses)
+
+Data3$Average.kWh=as.numeric(Data3$Average.kWh)
+is.numeric(Data3$Average.kWh)
+
+Data3$Average.Bill=as.numeric(Data3$Average.Bill)
+is.numeric(Data3$Average.Bill)
+
+
+Data3$year=as.factor(Data3$year)
+is.factor(Data3$year)
+
+
+Data3$month=as.factor(Data3$month)
+is.factor(Data3$month)
+##Cool, my factors are factors, my response variables are numeric. Now I'm going to create three more colums with mutate. 
+Data3<-Data3%>%mutate(prop=Total.Austin.Responses/Total.Travis.County.Responses)
+Data3<-Data3%>%mutate(cost=Average.Bill/Average.kWh)
+Data3<-Data3%>%mutate(maybe=Total.Austin.Responses/Average.Bill)
+```
+
+## Summary statistics 
+
+###Means 
+```{r}
+##Overall means
+Data3%>%summarize(mean_Austin=mean(Total.Austin.Responses), mean_Travis=mean(Total.Travis.County.Responses), mean_bill=mean(Average.Bill), mean_Kwh=mean(Average.kWh), mean_prop=mean(prop), mean_cost=mean(cost))%>%arrange(desc(mean_Austin))%>%print()
+##Means grouped by year 
+Data3%>%group_by(year)%>%summarize(mean_Austin=mean(Total.Austin.Responses), mean_Travis=mean(Total.Travis.County.Responses), mean_bill=mean(Average.Bill), mean_Kwh=mean(Average.kWh), mean_prop=mean(prop), mean_cost=mean(cost))%>%arrange(desc(mean_Austin))%>%print()
+
+##Means grouped by month
+Data3%>%group_by(month)%>%summarize(mean_Austin=mean(Total.Austin.Responses), mean_Travis=mean(Total.Travis.County.Responses), mean_bill=mean(Average.Bill), mean_Kwh=mean(Average.kWh), mean_prop=mean(prop), mean_cost=mean(cost))%>%arrange(desc(mean_Austin))%>%print()
+
+##Means grouped by year and filtered for July 
+Data3%>%group_by(year,month)%>%summarize(mean_Austin=mean(Total.Austin.Responses), mean_Travis=mean(Total.Travis.County.Responses), mean_bill=mean(Average.Bill), mean_Kwh=mean(Average.kWh), mean_prop=mean(prop), mean_cost=mean(cost))%>%arrange(desc(mean_Austin))%>%filter(month=="07")%>%print()
+
+##Means grouped by year and filtered for January
+Data3%>%group_by(year,month)%>%summarize(mean_Austin=mean(Total.Austin.Responses), mean_Travis=mean(Total.Travis.County.Responses), mean_bill=mean(Average.Bill), mean_Kwh=mean(Average.kWh), mean_prop=mean(prop), mean_cost=mean(cost))%>%arrange(desc(mean_Austin))%>%filter(month=="01")%>%print()
+##Neat, it looks like some of the responses were really different in the past 7 years in January, but are generally increasing. 
+
+```
+
+###SD
+```{r}
+##Overall SDs
+Data3%>%summarize(sd_Austin=sd(Total.Austin.Responses), sd_Travis=sd(Total.Travis.County.Responses), sd_bill=sd(Average.Bill), sd_Kwh=sd(Average.kWh), sd_prop=sd(prop), sd_cost=sd(cost))%>%arrange(desc(sd_Austin))
+##SD grouped by year 
+Data3%>%group_by(year)%>%summarize(sd_Austin=sd(Total.Austin.Responses), sd_Travis=sd(Total.Travis.County.Responses), sd_bill=sd(Average.Bill), sd_Kwh=sd(Average.kWh), sd_prop=sd(prop), sd_cost=mean(cost))%>%arrange(desc(sd_Austin))
+
+```
+
+###Var 
+```{r}
+##Var overall
+Data3%>%summarize(var_Austin=var(Total.Austin.Responses), var_Travis=var(Total.Travis.County.Responses), var_bill=var(Average.Bill), var_Kwh=var(Average.kWh), var_prop=var(prop), var_cost=var(cost))%>%arrange(desc(var_Austin))
+##Var grouped by year 
+Data3%>%group_by(year)%>%summarize(var_Austin=var(Total.Austin.Responses), var_Travis=var(Total.Travis.County.Responses), var_bill=var(Average.Bill), var_Kwh=var(Average.kWh), var_prop=var(prop), var_cost=var(cost))%>%arrange(desc(var_Austin))
+
+```
+
+###Cor
+##Showing covariance and correlation, I'm dropping the columns I made because they're made from two other variables (so they'll be related) and I think it could get noisy 
+```{r}
+Data3%>%select(-prop,-cost,-maybe)%>%select_if(is.numeric)%>%scale%>%cov%>%round(2)
+
+```
+
+Part 4, Visualizations 
+
+##We're going to look at some visuals now. I'm going to make some plots looking at how the  vairables I made "cost" which is realative bill/kWh, "prop" the proportion of Austin to Travis county emergency responses, and "maybe" the average austin repsones/ average energy bills, vary when grouped by month and year. I'll only include plots that show interesting results.  
+
+```{r}
+library(ggridges)
+Data3%>%ggplot(aes(cost,y=month, fill=month))+geom_density_ridges(quantile_lines=TRUE, quantiles=2)
+##Neat! It looks like energy is more expsensive (less bang for your buck) in the summer (July, August, September). If it's set up right, cost shouldn't reflect the average PRICE (which is the bill variable) but rather price PER UNIT of energy. 
+
+##Let's do a similar figure for prop, the proportion of Austin vs Travis county emergency responses by YEAR
+Data3%>%ggplot(aes(prop,y=year, fill=year))+geom_density_ridges(quantile_lines=TRUE, quantiles=2)
+##So most years, the realative proportion of emergency responses IN austin were the same, but 2018 and 2019 have a slightly different pattern. As a note, not all 12 months are represented in each year of these figures. 
+
+##Last one for Maybe. Let's see if electric bills and emergency responses have a realtionship 
+Data3%>%ggplot(aes(maybe,y=year, fill=year))+geom_density_ridges(quantile_lines=TRUE, quantiles=2)
+##Cool! Different years the relationship between electric bills and emergency responses have been pretty different in terms of their proportions and distributions. 
+
+##Checking "maybe" affects by month
+Data3%>%ggplot(aes(maybe,y=month, fill=month))+geom_density_ridges(quantile_lines=TRUE, quantiles=2)
+##Things are kinda the same, but maybe something in march/april/may has a slightly different relationship! 
+```
+
+#Step 5, PCA Analysis
+##I'm going to run PCA on my numeric factors (not including the new variables that I created with mutate)
+##I'm going to pick the PCAs that will allow the variation to be over 80% explained.
+
+```{r}
+###PCA Analysis 
+DataPCA<-Data3%>%select(-cost,-maybe,-prop)
+PCA_try<-DataPCA%>%select_if(is.numeric)%>%scale()
+PCA_list<-rownames(PCA_try)
+PCA_3<-princomp(PCA_try)
+names(PCA_3)##So far it looks like what we'd expect \
+summary(PCA_3, loadings=T)
+
+##So we've got a starting point! Now we can figure out how much to keep 
+
+Eiggy<-PCA_3$sdev^2
+Varr<-round(Eiggy/sum(Eiggy),2) 
+
+ggplot()+geom_bar(aes(y=Varr,x=1:4, fill=Varr),stat="identity")+geom_path(aes(y=Varr,x=1:4))+
+scale_y_continuous(labels = scales::percent)+
+scale_x_continuous(breaks=1:10)
+
+##I'm going to pick the PCAs that will allow is to be over 80% explained, and drop component 4 from the analysis. I'll look at the summary again
+
+summary(PCA_3, loadings=T)
+##Component 4 is "average.bills" 
+##I'm going to plot the two strongest  components, Total Austin Responses and Total travis county responses.
+
+ggplot()+geom_point(aes(PCA_3$scores[,1], PCA_3$scores[,2]), color="green")+xlab("Austin.Responses")+ylab("Travis.County.Responses")
+
+##It looks like Austin responses and Travis responses form some pretty distinct groups in the data! 
+```
+
+
+
+
+
+
+
+
+
+

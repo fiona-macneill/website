@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Fiona Mac" />
+    <meta name="description" content="Describe your website">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>Project 2 fm9253</title>
+    <meta name="generator" content="Hugo 0.61.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="/blog/">BLOG</a></li>
+        
+        <li><a href="/projects/">PROJECTS</a></li>
+        
+        <li><a href="/resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="/project2/">Project 2 fm9253</a></strong>
+          </h3>
+        </div>
+        <div class="blog-title">
+          <h4>
+          January 1, 0001
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<p>(5 pts) Introduce your dataset and each of your variables (or just your main variables if you have
+lots) in a paragraph.</p>
+<p><strong>I chose to work with the “meuse” dataset for project 2, because I’m becoming really interested in spatial variables and what happens if some response variables/factors change along an environmental gradient and others don’t. The “meuse” dataset provides information about various metal concentrations along the Meuse river. This is a dataset I’ve used before to practice making spatial plots, and I thought it would be really neat to try and run analysis on different variables as well. For this project, I will narrow down on a few variables. “copper” “lead” and “zinc” are all concentrations of the respective metals in units of mg/kg soil (parts per million). “dist.m” is the distance from the river in meters, “soil” is a factor with 3 levels (soil types), “lime” is a binary response for presence and absense of lime in the sample (where 1 indicates that lime IS present). “ffreq” gives expected flooding frequency- where 1 is 1/2 years, 2 is 1/10 years, and 3 is 1/50 years (imporant note- not linear categories), and “elev” shows elevation above the river. “landuse” shows different codes of land use over those distances. There are lots and I’m going to narrow down on “Am” “Ah” and “W”. It’s not 100% clear to me but I believe that Am and Ah are two different types of agricultural landuse and W is pastures, which are of interest to me because it seems like differently land management practices could have some neat affects on what’s present in the soil</strong></p>
+<p><em>First off, I’m just going to clean up this data and pick a smaller range to work with. Specifically I’m mostly just removing the coordinate data (x&amp;y) and subsetting the landuse factors so theres only 3 levels (each one still has more than 10 observations)</em></p>
+<pre class="r"><code>dat1&lt;-meuse%&gt;%select(copper,lead,zinc,dist.m,soil,lime,ffreq,landuse,elev)%&gt;%filter(landuse %in% c(&quot;Am&quot;,&quot;Ah&quot;,&quot;W&quot;))</code></pre>
+<p>(15 pts) Perform a MANOVA testing whether any of your numeric variables (or a subset of them,
+if including them all doesn’t make sense) show a mean difference across levels of one of your categorical
+variables (3). If they do, perform univariate ANOVAs to find response(s) showing a mean difference
+across groups (3),and perform post-hoc t tests to find which groups differ (3). Discuss the number of tests you have performed, calculate the probability of at least one type I error (if unadjusted), andadjust the significance level accordingly (bonferroni correction) before discussing significant differences
+(3). Briefly discuss assumptions and whether or not they are likely to have been met (2).</p>
+<pre class="r"><code>##MANOVA- 3 numeric variables across 1 categorical variable 
+##Assumptions first- Checking multivariate normality 
+##Zinc and copper 
+ggplot(dat1, aes(x = zinc, y = copper)) +
+geom_point(alpha = .5) + geom_density_2d(h=2) + coord_fixed() + facet_wrap(~landuse)##Visually these observations aren&#39;t meeting our expectations, I&#39;m going to log-transform the variables to check these assumptions (and run further analysis)</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code>##Transform the data
+dat1$lzinc&lt;-log(dat1$zinc)
+dat1$lcopper&lt;-log(dat1$copper)
+dat1$llead&lt;-log(dat1$lead)
+##Zinc and copper 
+ggplot(dat1, aes(x = lzinc, y = lcopper)) +
+geom_point(alpha = .5) + geom_density_2d(h=2) + coord_fixed() + facet_wrap(~landuse)</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
+<pre class="r"><code>##Zinc and Lead 
+ggplot(dat1, aes(x = lzinc, y = llead)) +
+geom_point(alpha = .5) + geom_density_2d(h=2) + coord_fixed() + facet_wrap(~landuse)</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-2-3.png" width="672" /></p>
+<pre class="r"><code>##Copper and Lead 
+ggplot(dat1, aes(x = lcopper, y = llead)) +
+geom_point(alpha = .5) + geom_density_2d(h=2) + coord_fixed() + facet_wrap(~landuse)##Ok these are looking more like what we&#39;d expect for an alright multivariate normality situation</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-2-4.png" width="672" /></p>
+<pre class="r"><code>##Homogeneity of covariances
+covomat&lt;-dat1%&gt;%group_by(landuse)%&gt;%do(covs=cov(.[9:11]))
+for(i in 1:3){print(covomat$covs[i])}##Nothing here jumps out to me as problemetic so I&#39;m going to continue with the analysis using these log-transformed values</code></pre>
+<pre><code>## [[1]]
+##               elev      lzinc    lcopper
+## elev     0.8877488 -0.4492104 -0.2718090
+## lzinc   -0.4492104  0.4459434  0.2525341
+## lcopper -0.2718090  0.2525341  0.1813073
+## 
+## [[1]]
+##               elev      lzinc    lcopper
+## elev     1.1043812 -0.4022932 -0.1833724
+## lzinc   -0.4022932  0.4005980  0.1968674
+## lcopper -0.1833724  0.1968674  0.1592882
+## 
+## [[1]]
+##               elev      lzinc    lcopper
+## elev     1.2025215 -0.5743337 -0.4140795
+## lzinc   -0.5743337  0.6302335  0.4552959
+## lcopper -0.4140795  0.4552959  0.3615401</code></pre>
+<pre class="r"><code>##Actual MANOVA 
+manova1&lt;-manova(cbind(lzinc,lcopper,llead)~landuse, data=dat1)
+summary(manova1)##zinc, copper, and lead do show a significant difference based on landuse! </code></pre>
+<pre><code>##            Df  Pillai approx F num Df den Df  Pr(&gt;F)  
+## landuse     2 0.11589   2.1938      6    214 0.04478 *
+## Residuals 108                                         
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>##Looking at individual responses with &quot;summary.aov&quot;
+summary.aov(manova1)##All three of our categories (lead, zinc, copper) vary by landuse</code></pre>
+<pre><code>##  Response lzinc :
+##              Df Sum Sq Mean Sq F value   Pr(&gt;F)   
+## landuse       2  5.868 2.93404  5.6344 0.004704 **
+## Residuals   108 56.240 0.52074                    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response lcopper :
+##              Df  Sum Sq Mean Sq F value   Pr(&gt;F)   
+## landuse       2  3.2862  1.6431   6.349 0.002472 **
+## Residuals   108 27.9502  0.2588                    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response llead :
+##              Df Sum Sq Mean Sq F value  Pr(&gt;F)  
+## landuse       2  3.706  1.8529  4.1267 0.01875 *
+## Residuals   108 48.492  0.4490                  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>##Mean differences for each response across groups
+dat1%&gt;%group_by(landuse)%&gt;%summarize(mean(lcopper),mean(lzinc),mean(llead))##In all cases, the concentration is highest in W, second highest in Ah and lowest in Am. </code></pre>
+<pre><code>## # A tibble: 3 x 4
+##   landuse `mean(lcopper)` `mean(lzinc)` `mean(llead)`
+##   &lt;fct&gt;             &lt;dbl&gt;         &lt;dbl&gt;         &lt;dbl&gt;
+## 1 Ah                 3.48          5.80          4.74
+## 2 Am                 3.38          5.66          4.61
+## 3 W                  3.78          6.20          5.05</code></pre>
+<pre class="r"><code>##Post-hoc t tests 
+pairwise.t.test(dat1$lzinc, dat1$landuse, p.adj=&quot;none&quot;)##Zinc-Ah is different from W, Am is different from W </code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  dat1$lzinc and dat1$landuse 
+## 
+##    Ah     Am    
+## Am 0.4674 -     
+## W  0.0107 0.0041
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(dat1$llead, dat1$landuse, p.adj=&quot;none&quot;)##Lead-Ah is different from W, Am is different from W</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  dat1$llead and dat1$landuse 
+## 
+##    Ah    Am   
+## Am 0.469 -    
+## W  0.033 0.012
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(dat1$lcopper, dat1$landuse, p.adj=&quot;none&quot;)##Copper-Ah is different from W, Am is different from W</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  dat1$lcopper and dat1$landuse 
+## 
+##    Ah     Am    
+## Am 0.4714 -     
+## W  0.0062 0.0026
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>##Number of tests and bonferroni correction 
+##Probability of at least ONE type one error can be found with 1-(1-alpha)^x
+##We conducted 3 pairwise t.tests and 2 anaova/manova tests, so x=5 
+
+proberror&lt;-1-(.95^5)
+proberror##Probability of at least 1 type 1 error is .22, </code></pre>
+<pre><code>## [1] 0.2262191</code></pre>
+<pre class="r"><code>a2&lt;-.05/5
+a2##New sig level is .01 </code></pre>
+<pre><code>## [1] 0.01</code></pre>
+<pre class="r"><code>##Significance differences? 
+##lzinc, and lcopper still fall below the significance threshold, but llead does not!!</code></pre>
+<p><em>I ran a MANOVA for lead copper and zinc (all numeric) varied by landuse type (3 categories). Initially I tried to check MANOVA assumptions of multivariate normality by plotting pairs of response variables (zinc&amp;copper, zinc&amp;lead, copper&amp;lead) and ended up log-transforming the responses, which I carried throughout the analysis. I also tried to look at homogeniety of covariances using the “covmat” function, and nothing struck me as off</em></p>
+<p><em>running the MANOVA, it did appear that there were some differences, so I used summary.aov to look at univariate anova responses and saw that all 3 responses (log copper, zinc, and lead) varied with respect to landuse. Looking at post-hoc t tests, it seemed for all 3 responses the concentration in landuse “W” was different from both “Ah” and “AM”</em></p>
+<p><em>I looked at the probability of a type I error with 1-(1-alpha)^x and counted 5 tests that had been run, after adjusting the significance threshold with a bonferroni correction lead concentrations were no longer below the significance thresholds, but copper and zinc still were</em></p>
+<p><em>Asumptions- random sample and independant observation, that should be fine to the best of my knowledge but I didn’t directly “test” it. Multivariate normality- I tried to visualize that early on, and it was kinda funky so I log transformed the metal concentration responses, which seemed to improve the situation a bit when comparing responses. Homogeniety of covariance- I ran code to look at covariance and nothing jumped out at me as a problem, it all seemed OK so I continued forward. Linear relationship, a bit harder to say across categories from the tests I performed. No extreme outliers- none that I could see in our visualizations.No multicollinearity, no correlation between dependant variables. This one is trickier! Because this data is spatially based, you could imagine that the data points share lots of things in common (through their environment) that aren’t being measured here. I tried to be intentional when I subsetted landuse into our three categories and hope that three different land types won’t be too too correlated, but I can’t say for sure from this analysis. Nothing strikes me as outwardly super related from the visualizations so far.</em></p>
+<ol start="2" style="list-style-type: decimal">
+<li>(10 pts) Perform some kind of randomization test on your data (that makes sense). This can be
+anything you want! State null and alternative hypotheses, perform the test, and interpret the results
+(7). Create a plot visualizing the null distribution and the test statistic (3).</li>
+</ol>
+<pre class="r"><code>##Randomization test- lets look at copper concentrations in relation to flood frequency levels 2 and 3. 
+
+##Null- copper levels will not be associated with flood frequency categories 2 and 3, 
+##Alternative: log-copper levels will vary by flood frequency categories 2 and 3 
+
+##Actual test 
+dat2&lt;-dat1%&gt;%filter(ffreq %in% c(&quot;2&quot;,&quot;3&quot;))
+f2&lt;-dat2%&gt;%filter(ffreq==&quot;2&quot;)
+f3&lt;-dat2%&gt;%filter(ffreq==&quot;3&quot;)
+mf2&lt;-mean(f2$lcopper)
+mf3&lt;-mean(f3$lcopper)
+##True mean dist 
+truemean&lt;-mf3-mf2##.0625
+rando&lt;-vector()
+for(i in 1:5000){
+  new&lt;-data.frame(lcopper=sample(dat2$lcopper),ffreq=dat2$ffreq)
+  rando[i]&lt;-mean(new[new$ffreq==&quot;3&quot;,]$lcopper)-
+            mean(new[new$ffreq==&quot;2&quot;,]$lcopper)}
+
+hist(rando,main=&quot;&quot;,ylab=&quot;&quot;)
+##Intepret results
+mean(rando&gt; .0624)*2 #pvalue of .424, it&#39;s not unlikely to see an outcome like an observation data when the null hypothesis is true, we cannot reject the null hypothesis! </code></pre>
+<pre><code>## [1] 0.3916</code></pre>
+<pre class="r"><code>##Visualization of null distribution and test statistic 
+{hist(rando,main=&quot;&quot;,ylab=&quot;&quot;); abline(v = .0625,col=&quot;red&quot;)} </code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-3-1.png" width="672" />
+<em>I did a randomization test of log-copper concentration over flood frequency categories 2 &amp; 3. Our null hypothesis would be that copper levels aren’t different with respect to those two flood categories- our alternative would be that there is a difference. The p-value came out to be just about .4 in the analysis- so we can’t reject the null hypothesis</em></p>
+<ol start="3" style="list-style-type: decimal">
+<li>(35 pts) Build a linear regression model predicting one of your response variables from at least 2
+other variables, including their interaction. Mean-center any numeric variables involved in the interaction.
+– Interpret the coefficient estimates (do not discuss significance) (10)
+– Plot the regression using ggplot(). If your interaction is numeric by numeric, refer to code near
+the end of WS15 to make the plot. If you have 3 or more predictors, just chose two to plot for
+convenience. (7)
+– Check assumptions of linearity, normality, and homoskedasticity either graphically or using a
+hypothesis test (3)
+– Regardless, recompute regression results with robust standard errors via coeftest(…,
+vcov=vcovHC(…)). Discuss significance of results, including any changes from before/after
+robust SEs if applicable. (7)
+– What proportion of the variation in the outcome does your model explain? (3)
+– Finally, rerun the regression but without interactions (just main effects); compare this with the
+interaction model and the null model using a likelihood ratio test (4)</li>
+</ol>
+<pre class="r"><code>##Mean-center numerics 
+dat1$ll&lt;-dat1$llead-(mean(dat1$llead))
+dat1$lz&lt;-dat1$lzinc-(mean(dat1$lzinc))
+dat1$el&lt;-dat1$elev-(mean(dat1$elev))
+dat1$me&lt;-dat1$dist.m-(mean(dat1$dist.m))
+###Actual model 
+fit&lt;-lm(lz~ffreq+me+ffreq:me, data=dat1)
+coef(fit)##Looks like theres differences for lzinc based on both flood frequency and distance from the river, there are also interactions but theyre very close to 0 </code></pre>
+<pre><code>##  (Intercept)       ffreq2       ffreq3           me    ffreq2:me    ffreq3:me 
+##  0.126813068 -0.460039946 -0.301733627 -0.003240650  0.001603546  0.001214477</code></pre>
+<pre class="r"><code>exp(coef(fit))</code></pre>
+<pre><code>## (Intercept)      ffreq2      ffreq3          me   ffreq2:me   ffreq3:me 
+##   1.1352048   0.6312584   0.7395350   0.9967646   1.0016048   1.0012152</code></pre>
+<pre class="r"><code>##Predicted zinc concentration rises .63 between flood 1 and flood 2, and increases .79 between flood 1 and flood 3. It&#39;s relationship with distance is almost exactlt 1 (slope of .99), and there are slight interactions between flood groups and distances. 
+##Plotting 2 predictors 
+ggplot(dat1, aes(x=lz, y=me,group=ffreq))+geom_point(aes(color=ffreq))+
+geom_smooth(method=&quot;lm&quot;,formula=y~1,se=F,fullrange=T,aes(color=ffreq))+
+theme(legend.position=c(.9,.19))</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>##This figure shows points mean-adjusted distances and mean adjusted zinc concentration, colored by flood frequency
+
+dat1%&gt;%select(ffreq,dist.m,lzinc)%&gt;%pivot_longer(-1,names_to=&#39;DV&#39;, values_to=&#39;measure&#39;)%&gt;%
+  ggplot(aes(ffreq,measure,fill=ffreq))+geom_bar(stat=&quot;summary&quot;)+geom_errorbar(stat=&quot;summary&quot;, width=.5)+
+  facet_wrap(~DV, nrow=2)+coord_flip()+ylab(&quot;&quot;)+theme(legend.position = &quot;none&quot;)+scale_fill_brewer()##This figure shows both zinc concentrations against flood frequences, and flood frequences against elevations (I thought that could be cool to see since there was a very slight suggested interaction affect in our model)</code></pre>
+<pre><code>## No summary function supplied, defaulting to `mean_se()
+## No summary function supplied, defaulting to `mean_se()
+## No summary function supplied, defaulting to `mean_se()
+## No summary function supplied, defaulting to `mean_se()</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-4-2.png" width="672" /></p>
+<pre class="r"><code>##Check assumptions: linearity, normality, homoskedasticity
+##Check linearity and homoskedacity 
+residy&lt;-fit$residuals
+fit.v&lt;-fit$fitted.values
+ggplot()+geom_point(aes(fit.v,residy))+geom_hline(yintercept=0,color=&#39;blue&#39;)</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-4-3.png" width="672" /></p>
+<pre class="r"><code>## Homoskedacity and linearity look alright! No clear patterns! 
+
+ggplot()+geom_histogram(aes(residy), bins=20)##That&#39;s not great, but it&#39;s OKish </code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-4-4.png" width="672" /></p>
+<pre class="r"><code>##Check normality
+ggplot()+geom_qq(aes(sample=residy))+geom_qq_line(aes(sample=residy))##Not ideal at the beginning, but overall this seems fine to me</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-4-5.png" width="672" /></p>
+<pre class="r"><code>##Recompute regression results w/ robust standard errors using coeftest. Discuss siginicance results including before and after robest SEs 
+library(sandwich)
+library(lmtest)</code></pre>
+<pre><code>## Loading required package: zoo</code></pre>
+<pre><code>## 
+## Attaching package: &#39;zoo&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     as.Date, as.Date.numeric</code></pre>
+<pre class="r"><code>fit&lt;-lm(lz~ffreq+me+ffreq:me, data=dat1)
+
+##What proportion of variance does model explain 
+
+summary(fit)$r.sq##only .7512 explained- I would interpret that to mean theres a lot more that&#39;s driving the concentration </code></pre>
+<pre><code>## [1] 0.7512368</code></pre>
+<pre class="r"><code>##Re-run model without interaction, compare to model with interaction using a likelyhood ratio test 
+##Without interactions, likelyhood ratio test
+fit2&lt;-lm(lz~ffreq+me, data=dat1)
+anova(fit,fit2, test=&quot;LRT&quot;)</code></pre>
+<pre><code>## Analysis of Variance Table
+## 
+## Model 1: lz ~ ffreq + me + ffreq:me
+## Model 2: lz ~ ffreq + me
+##   Res.Df    RSS Df Sum of Sq Pr(&gt;Chi)    
+## 1    105 15.450                          
+## 2    107 17.517 -2   -2.0665 0.000892 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>##A significant difference, we would use fit2 as a predictor model</code></pre>
+<p><em>I initially modeled zinc-concentrations over flood frequency and distance from river (and their interaction). The coefficients suggested that flood group 2 has the lowest suggested zinc levels, followed by flood group 3 and then flood group 1/ Zinc concentrations were expected to decrease as distance increased, but both the main affects and the interaction affects were very close to zero. I plotted distance by zinc concentration and colored the dots by flood frequency, and also included a figure showing zinc across flood frequency and distance across flood frequency. The visual tests I did for homoskedacity, linearity, and normality all seemed OK</em></p>
+<p><em>I used “summary(fit)$r.sq” to see how much variation was explained by this model- it’s about 75%. Comparing to a model WITHOUT interaction terms between distance and flood frequency, there’s a significant difference and I would probably continue on with the model that does not include interactions</em></p>
+<p>(5 pts) Rerun same regression model (with interaction), but this time compute bootstrapped standard errors. Discuss any changes you observe in SEs and p-values using these SEs compared to the original SEs and the robust SEs)</p>
+<pre class="r"><code>##Initial standard errors 
+library(sandwich)
+library(lmtest)
+fit&lt;-lm(lz~ffreq+me+ffreq:me, data=dat1)
+summary(fit)$coef</code></pre>
+<pre><code>##                 Estimate   Std. Error   t value     Pr(&gt;|t|)
+## (Intercept)  0.126813068 0.0629438698  2.014701 4.649223e-02
+## ffreq2      -0.460039946 0.0936642463 -4.911585 3.334608e-06
+## ffreq3      -0.301733627 0.1179561858 -2.558014 1.195426e-02
+## me          -0.003240650 0.0003350719 -9.671504 3.349217e-16
+## ffreq2:me    0.001603546 0.0004316699  3.714750 3.278814e-04
+## ffreq3:me    0.001214477 0.0005652301  2.148641 3.396115e-02</code></pre>
+<pre class="r"><code>##Robust SEs 
+coeftest(fit, vcov = vcovHC(fit))</code></pre>
+<pre><code>## 
+## t test of coefficients:
+## 
+##                Estimate  Std. Error  t value  Pr(&gt;|t|)    
+## (Intercept)  0.12681307  0.06608975   1.9188 0.0577248 .  
+## ffreq2      -0.46003995  0.10516446  -4.3745 2.878e-05 ***
+## ffreq3      -0.30173363  0.14797265  -2.0391 0.0439502 *  
+## me          -0.00324065  0.00030806 -10.5195 &lt; 2.2e-16 ***
+## ffreq2:me    0.00160355  0.00040055   4.0034 0.0001167 ***
+## ffreq3:me    0.00121448  0.00061295   1.9814 0.0501656 .  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>##getting bootstrap SEs 
+boot_dat&lt;-dat1[sample(nrow(dat1),replace=TRUE),]
+samp_distn&lt;-replicate(5000, {
+boot_dat&lt;-dat1[sample(nrow(dat1),replace=TRUE),]
+fit&lt;-lm(lz~ffreq+me+ffreq:me, data=boot_dat)
+coef(fit)
+})
+##bootstrap SEs 
+bootstrapSE&lt;-samp_distn%&gt;%t%&gt;%as.data.frame%&gt;%summarize_all(sd)
+##Use 95% CI for bootstrapping to look at significance 
+boots&lt;-samp_distn%&gt;%t%&gt;%as.data.frame%&gt;%gather%&gt;%group_by(key)%&gt;%
+summarize(lower=quantile(value,.025), upper=quantile(value,.975))
+boots&lt;-boots[,2:3]
+##compare p-values to standard SEs and robust SEs and
+estimate&lt;-summary(fit)$coef[,1]
+check&lt;-cbind(boots, estimate)
+check</code></pre>
+<pre><code>##                     lower        upper     estimate
+## (Intercept) -3.998477e-03  0.252199438  0.126813068
+## ffreq2      -6.566047e-01 -0.258644331 -0.460039946
+## ffreq3       8.063049e-04  0.002373576 -0.301733627
+## me          -5.765685e-01 -0.041706912 -0.003240650
+## ffreq2:me    9.215442e-05  0.002442732  0.001603546
+## ffreq3:me   -3.856692e-03 -0.002646688  0.001214477</code></pre>
+<p><em>With the initial SEs, everything is significant, and we’re seeing both main affects and interaction affects in the model. When you go to ROBUST standard errors, theres no longer a significant interaction affect between ffreq3:me. To look at significance of the standard error in the bootstrap, I compared values to 95% confidence interval. Essentially, if we’re INSIDE the interval, that’s a non-significant affect. ffreq3 is the only thing falling OUTSIDE the confidence interval after bootstrap SEs are accounted for</em></p>
+<ol start="5" style="list-style-type: decimal">
+<li>(40 pts) Perform a logistic regression predicting a binary categorical variable (if you don’t haveone, make/get one) from at least two explanatory variables (interaction not necessary).
+– Interpret coefficient estimates in context (10)
+– Report a confusion matrix for your logistic regression (2)
+– Compute and discuss the Accuracy, Sensitivity (TPR), Specificity (TNR), and Recall (PPV) of your model (5)
+– Using ggplot, plot density of log-odds (logit) by your binary outcome variable (3)
+– Generate an ROC curve (plot) and calculate AUC (either manually or with a package); interpret</li>
+</ol>
+<ol start="10" style="list-style-type: decimal">
+<li>– Perform 10-fold (or repeated random sub-sampling) CV and report average out-of-sample Accuracy,
+Sensitivity, and Recall (10)</li>
+</ol>
+<pre class="r"><code>##Logistic regression predicting on a binary variable 
+library(lmtest)
+##Initial model, I&#39;m going to see if we can predict lime (presense/absense) based on distance from river and elevation
+fit2&lt;-glm(lime~dist.m+elev, data=dat1, family=binomial(link=&quot;logit&quot;))
+ 
+##Interpret coefficient estimates in contect 
+coeftest(fit2)##Both elevation and distance from river seem to be significant predictors of whether or not there&#39;s lime, in both cases we expect lime to be less likely as distance and elevation increase. ##The predicted likelyhood of lime presence goes down .01 with every unit increase of distance, and goes down .69 for every unit increase in elevation.</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##               Estimate Std. Error z value  Pr(&gt;|z|)    
+## (Intercept)  6.5225353  2.3554823  2.7691  0.005621 ** 
+## dist.m      -0.0100287  0.0023934 -4.1901 2.788e-05 ***
+## elev        -0.6999359  0.3039961 -2.3025  0.021310 *  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(coeftest(fit2))</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##              Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept) 680.30098   10.54321 15.9441    1.006
+## dist.m        0.99002    1.00240  0.0151    1.000
+## elev          0.49662    1.35526  0.1000    1.022</code></pre>
+<pre class="r"><code>##The predicted likelyhood of lime changes almost linearly with distance (slope=.99), and changes .49 for every unit increase in elevation.
+
+
+##Making a new data frame with just the factors I&#39;m interested in &quot;elev, dist.m, and lime&quot; 
+elev&lt;-dat1$elev
+dist.m&lt;-dat1$dist.m
+newdata&lt;-data.frame(elev, dist.m)
+predict&lt;-predict(fit2, newdata=newdata, type=&quot;response&quot;) 
+predict&lt;-ifelse(predict&gt;.5,1,0)
+##Confusion matrix
+table(truth=dat1$lime, prediction=predict)%&gt;%addmargins</code></pre>
+<pre><code>##      prediction
+## truth   0   1 Sum
+##   0    69   7  76
+##   1     8  27  35
+##   Sum  77  34 111</code></pre>
+<pre class="r"><code>##Compute Acc, Sense, Spec, and PPV 
+Acc1&lt;-(69+27)/111##.91 ##Proportion that were correct (both true and false)
+Sens1&lt;-27/35##.77 true positive rate
+Spec1&lt;-69/76##.90 true negative rate 
+PPV1&lt;-7/34##.205
+##ggplot logit by outcome variable 
+dat1$logit&lt;-predict(fit2)
+dat1$res&lt;-factor(dat1$lime,levels=c(&quot;0&quot;,&quot;1&quot;))
+ggplot(dat1,aes(logit, fill=res))+geom_density(alpha=.3)+
+  geom_vline(xintercept=-2,lty=2)</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<pre class="r"><code>##ROC curve and AUC 
+fit2&lt;-glm(lime~dist.m+elev, data=dat1, family=&quot;binomial&quot;)
+pca1&lt;-princomp(dat1[c(&#39;elev&#39;,&#39;dist.m&#39;)])
+dat1$predictor&lt;-pca1$scores[,1]
+fit2&lt;-glm(lime~dist.m+elev, data=dat1, family=&quot;binomial&quot;)
+dat1$prob&lt;-predict(fit2, type=&quot;response&quot;)
+
+
+sens&lt;-function(p,data=dat1, y=lime) mean(data[data$lime==1,]$prob&gt;p)
+spec&lt;-function(p,data=dat1, y=lime) mean(data[data$lime==0,]$prob&lt;p)
+
+sensitivity&lt;-sapply(seq(0,1,.01),sens,dat1)
+specificity&lt;-sapply(seq(0,1,.01),spec,dat1)
+
+
+ROC1&lt;-data.frame(sensitivity,specificity,cutoff=seq(0,1,.01))
+
+
+ROC1$TPR&lt;-sensitivity##True pos
+ROC1$FPR&lt;-1-specificity##False Pos
+
+ROC1%&gt;%ggplot(aes(FPR,TPR))+geom_path(size=1.5)+geom_segment(aes(x=0,y=0,xend=1,yend=1),lty=2)+
+scale_x_continuous(limits = c(0,1))</code></pre>
+<p><img src="/project2_files/figure-html/unnamed-chunk-6-2.png" width="672" /></p>
+<pre class="r"><code>ROC1&lt;-ROC1[order(-ROC1$cutoff),]
+widths&lt;-diff(ROC1$FPR)
+heights&lt;-vector()
+
+for (i in 1:100) heights[i]&lt;-ROC1$TPR[i]+ROC1$TPR[i+1]
+
+AUC&lt;-sum(heights*widths/2)
+AUC%&gt;%round(3)###.92</code></pre>
+<pre><code>## [1] 0.92</code></pre>
+<pre class="r"><code>###This is code provided in one of the homeworks, I did NOT write this code, but I am using it for analysis. 
+class_diag&lt;-function(probs,truth){
+  
+  tab&lt;-table(factor(probs&gt;.5,levels=c(&quot;FALSE&quot;,&quot;TRUE&quot;)),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+
+  if(is.numeric(truth)==FALSE &amp; is.logical(truth)==FALSE) truth&lt;-as.numeric(truth)-1
+  
+  #CALCULATE EXACT AUC
+  ord&lt;-order(probs, decreasing=TRUE)
+  probs &lt;- probs[ord]; truth &lt;- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup&lt;-c(probs[-1]&gt;=probs[-length(probs)], FALSE)
+  TPR&lt;-c(0,TPR[!dup],1); FPR&lt;-c(0,FPR[!dup],1)
+  
+  n &lt;- length(TPR)
+  auc&lt;- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+##End of class/HW direct code
+set.seed(1234)
+k=10
+
+dat33&lt;-dat1[sample(nrow(dat1)),]
+folds&lt;-cut(seq(1:nrow(dat1)),breaks=k,labels=F)
+
+daigs&lt;-NULL
+diags&lt;-vector()
+for (i in 1:k){
+  train&lt;-dat33[folds!=i,]
+  test&lt;-dat33[folds==i,]
+  truth&lt;-test$lime
+  
+  fit2&lt;-glm(lime~dist.m+elev, data=dat1, family=&quot;binomial&quot;)
+  probs&lt;-predict(fit,newdata=test, type=&quot;response&quot;)
+  diags&lt;-rbind(diags,class_diag(probs,truth))
+  }
+
+apply(diags,2,mean)</code></pre>
+<pre><code>##       acc      sens      spec       ppv       auc 
+## 0.9181818 0.8547619 0.9621032 0.9166667 0.9255952</code></pre>
+<p><em>The “coeftest” estimates indicate elevation and distance from river predictor of whether or not there’s lime, in both cases we expect lime to be less likely as distance and elevation increase. The predicted likelyhood of lime presence goes down .01 with every unit increase of distance, and goes down .69 for every unit increase in elevation.</em>
+<em>Out of sample accuracy is about 90%- not so bad! PPV is .91, and sensitivity is about .85</em></p>
+<ol start="6" style="list-style-type: decimal">
+<li>(10 pts) Choose one variable you want to predict (can be one you used from before; either binary or continuous) and run a LASSO regression inputting all the rest of your variables as predictors. Choose lambda to give the simplest model whose accuracy is near that of the best (i.e., lambda.1se). Discuss which variables are retained. Perform 10-fold CV using this model: if response in binary, compare
+model’s out-of-sample accuracy to that of your logistic regression in part 5; if response is numeric, compare the residual standard error (at the bottom of the summary output, aka RMSE): lower is better fit!</li>
+</ol>
+<pre class="r"><code>##I could not get glmnet on to my local/computer R, so I ran that park on the server. However, there were parts of this that I couldn&#39;t run on the server either, so this last question I&#39;m leaving commented- the code is the exact same, it just wouldnt knit. I&#39;m going to manually add the last few pages to the PDF. 
+
+
+
+#library(sp)
+#library(dplyr)
+#library(tidyverse)
+#library(glmnet)
+#data(meuse, meuse.riv, meuse.grid)
+#dat1&lt;-meuse%&gt;%dplyr::select(lime,lead,zinc,dist.m,soil,lime,ffreq,landuse,elev)%&gt;%filter(landuse %in% c(&quot;Am&quot;,&quot;Ah&quot;,&quot;W&quot;))
+#dat2&lt;-dat1%&gt;%dplyr::select(lime,dist.m,soil,lime,ffreq,landuse,elev)
+#fit3&lt;-glm(lime~.,data=dat2, family=&quot;binomial&quot;)
+
+#y&lt;-dat2$lime%&gt;%as.matrix
+#x&lt;-dat2%&gt;%dplyr::select(-lime)%&gt;%mutate_if(is.numeric, scale)%&gt;%as.matrix()
+#x2&lt;-model.matrix(fit3)
+#cv&lt;-cv.glmnet(x2,y, family=&quot;binomial&quot;)
+#lasso&lt;-glmnet(x2,y,family=&quot;binomial&quot;,lambda = cv$lambda.1se)
+#coef(cv)##distance, soiltype, ffreq, and elevation predict, landuse did not!
+
+
+
+#class_diag&lt;-function(probs,truth){
+  
+  #tab&lt;-table(factor(probs&gt;.5,levels=c(&quot;FALSE&quot;,&quot;TRUE&quot;)),truth)
+  #acc=sum(diag(tab))/sum(tab)
+  #sens=tab[2,2]/colSums(tab)[2]
+  #spec=tab[1,1]/colSums(tab)[1]
+  #ppv=tab[2,2]/rowSums(tab)[2]
+
+  #if(is.numeric(truth)==FALSE &amp; is.logical(truth)==FALSE) truth&lt;-as.numeric(truth)-1
+  
+  #CALCULATE EXACT AUC
+ # ord&lt;-order(probs, decreasing=TRUE)
+  #probs &lt;- probs[ord]; truth &lt;- truth[ord]
+  
+  #TPR=cumsum(truth)/max(1,sum(truth)) 
+  #FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  #dup&lt;-c(probs[-1]&gt;=probs[-length(probs)], FALSE)
+  #TPR&lt;-c(0,TPR[!dup],1); FPR&lt;-c(0,FPR[!dup],1)
+  
+ # n &lt;- length(TPR)
+  #auc&lt;- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  #data.frame(acc,sens,spec,ppv,auc)
+#}
+
+#dat3&lt;-dat2%&gt;%dplyr::select(-landuse)##remove factor based on LASSO
+#newmodel&lt;-glm(lime~., data=dat3, family=&quot;binomial&quot;)
+##10 fold 
+#set.seed(45)
+#k=10
+
+#dat&lt;-dat3[sample(nrow(dat3)),]
+#folds&lt;-cut(seq(1:nrow(dat3)),breaks=k,labels=F)
+#diags&lt;-NULL
+#diags&lt;-vector()
+#for(i in 1:k){
+#train&lt;-dat[folds!=i,]
+#test&lt;-dat[folds==i,]
+#truth&lt;-test$lime
+#fit&lt;-glm(lime~., data=dat3, family=&quot;binomial&quot;)
+#probs&lt;-predict(fit,newdata = test,type=&quot;response&quot;)
+#diags&lt;-rbind(diags,class_diag(probs,truth))
+#}
+#apply(diags,2,mean)
+
+response&lt;-c(&quot;acc&quot;,&quot;sens&quot;,&quot;spec&quot;,&quot;ppv&quot;,&quot;auc&quot;)
+model1&lt;-c(.92,.85,.96,.91,.92)
+model2&lt;-c(.91,.90,.91,.86,.95)
+
+result&lt;-data.frame(response,model1,model2)%&gt;%print()</code></pre>
+<pre><code>##   response model1 model2
+## 1      acc   0.92   0.91
+## 2     sens   0.85   0.90
+## 3     spec   0.96   0.91
+## 4      ppv   0.91   0.86
+## 5      auc   0.92   0.95</code></pre>
+<pre class="r"><code>##We&#39;re a little more sensitive in model 2 but a little less specific</code></pre>
+
+              <hr>
+              <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div>
+            </div>
+          </div>
+          <hr>
+        <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+        </div>
+      </div>
+      
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/js/docs.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>
