@@ -1,0 +1,18 @@
+---
+title: Bloggy blog
+author: Fiona MacNeill
+date: '2019-12-13'
+slug: bloggy-blog
+categories: []
+tags: []
+description: ''
+---
+##This is some fake stuff? is it real?? 
+
+```{r}
+
+
+x<-2
+
+```
+
