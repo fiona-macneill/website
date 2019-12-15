@@ -1,5 +1,5 @@
 ---
-title: Bloggy blog
+title: Python code!! 
 author: Fiona MacNeill
 date: '2019-12-13'
 slug: bloggy-blog
@@ -7,12 +7,102 @@ categories: []
 tags: []
 description: ''
 ---
-##This is some fake stuff? is it real?? 
+##Here are some neat things that we've been doing in python!! 
 
 ```{r}
-
-
-x<-2
+###First I'm gonna load reticulate 
+library(reticulate)
 
 ```
+
+##Here's some basic function coding in python- let's say you start with a list of numbers or letters and way to do a simple loop printing them, you could do something like this! 
+
+```{python}
+for letter in "pythoniscool":
+    print(letter)
+```
+
+```{python}
+primes=[2,3,5,7,11]
+for i in primes:
+    print(i)
+```
+##You can also use "for" commands like this: 
+```{python}
+for i in range (1,30,3):
+    print(i)###I just told python to start at 1 and count up to 30 by intervals of 3
+```
+
+
+##You can count occurances in a string like this: 
+```{python}
+
+import numpy as np
+
+import pandas as pd
+```
+
+```{python}
+def count_chars(sentence): 
+    counts = {} #make an empty dictionary
+    for c in sentence: #for every value in the sentence 
+        if c in counts:
+            counts[c]+=1 #if its a value that's already shown up add +1 to counts
+        else:
+            counts[c]=1 #If it's a new value, hold counts for values steady
+    for c in counts:
+        print(c, "appears", counts[c],"times")##Telling what to put in between characters, for example 'c appears 2 times' etc. 
+
+
+##Let's try it out!! 
+sentence1= "I can learn to code" 
+count_chars(sentence1)
+```
+##Ok so we can see how often a single character appears in a group, but we can also see how many times GROUPS of characters appear with a (similar but modified) function. Let's look at nucleotide sequences as an example 
+
+```{python}
+def kmers(read, k):  ##defining a function for some sequecnce you're reading 'read' by groups 'k'. For our example k=3 
+    counts = {}  ##Another empty dictionary 
+    num_kmers = len(read) - k + 1###sets the numbers to read length of the seuqnce -one more than the selected length of our read 
+    for i in range(num_kmers):
+        kmer = read[i:i+k]##reading from 1 through however many we picked (so for example, 1-4 gets you a read of 3)
+        if kmer not in counts:##This count function is pretty much exactly the same!
+            counts[kmer] = 0
+        counts[kmer] += 1
+    return counts
+##Let's try it!
+
+my_seq1= "ATCATGATCATGATCATC" 
+
+kmers(my_seq1,3)
+
+##If we wanted to count by 4, we could just do this 
+
+kmers(my_seq1,4) 
+```
+
+##Some basic regex 
+
+```{python}
+import re
+
+string="I can learn to code" 
+match=re.match(r"I.*learn",string)
+match.group()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
