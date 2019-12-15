@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="author" content="Fiona Mac" />
+    <meta name="author" content="Fiona MacNeill" />
     <meta name="description" content="Describe your website">
     <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
-    <title>Bloggy blog</title>
+    <title>Python code!!</title>
     <meta name="generator" content="Hugo 0.61.0" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="/css/main.css" />
@@ -56,7 +56,7 @@
       <div class="container">
         <div class="blog-post">
           <h3>
-            <strong><a href="/blog/bloggy-blog/">Bloggy blog</a></strong>
+            <strong><a href="/blog/bloggy-blog/">Python code!!</a></strong>
           </h3>
         </div>
         <div class="blog-title">
@@ -72,8 +72,102 @@
               
 
 
-<p>##This is some fake stuff? is it real??</p>
-<pre class="r"><code>x&lt;-2</code></pre>
+<p>##Here are some neat things that we’ve been doing in python!!</p>
+<pre class="r"><code>###First I&#39;m gonna load reticulate 
+library(reticulate)</code></pre>
+<p>##Here’s some basic function coding in python- let’s say you start with a list of numbers or letters and way to do a simple loop printing them, you could do something like this!</p>
+<pre class="python"><code>for letter in &quot;pythoniscool&quot;:
+    print(letter)</code></pre>
+<pre><code>## p
+## y
+## t
+## h
+## o
+## n
+## i
+## s
+## c
+## o
+## o
+## l</code></pre>
+<pre class="python"><code>primes=[2,3,5,7,11]
+for i in primes:
+    print(i)</code></pre>
+<pre><code>## 2
+## 3
+## 5
+## 7
+## 11</code></pre>
+<p>##You can also use “for” commands like this:</p>
+<pre class="python"><code>for i in range (1,30,3):
+    print(i)###I just told python to start at 1 and count up to 30 by intervals of 3</code></pre>
+<pre><code>## 1
+## 4
+## 7
+## 10
+## 13
+## 16
+## 19
+## 22
+## 25
+## 28</code></pre>
+<p>##You can count occurances in a string like this:</p>
+<pre class="python"><code>
+import numpy as np
+
+import pandas as pd</code></pre>
+<pre class="python"><code>def count_chars(sentence): 
+    counts = {} #make an empty dictionary
+    for c in sentence: #for every value in the sentence 
+        if c in counts:
+            counts[c]+=1 #if its a value that&#39;s already shown up add +1 to counts
+        else:
+            counts[c]=1 #If it&#39;s a new value, hold counts for values steady
+    for c in counts:
+        print(c, &quot;appears&quot;, counts[c],&quot;times&quot;)##Telling what to put in between characters, for example &#39;c appears 2 times&#39; etc. 
+
+
+##Let&#39;s try it out!! 
+sentence1= &quot;I can learn to code&quot; 
+count_chars(sentence1)</code></pre>
+<pre><code>## I appears 1 times
+##   appears 4 times
+## c appears 2 times
+## a appears 2 times
+## n appears 2 times
+## l appears 1 times
+## e appears 2 times
+## r appears 1 times
+## t appears 1 times
+## o appears 2 times
+## d appears 1 times</code></pre>
+<p>##Ok so we can see how often a single character appears in a group, but we can also see how many times GROUPS of characters appear with a (similar but modified) function. Let’s look at nucleotide sequences as an example</p>
+<pre class="python"><code>def kmers(read, k):  ##defining a function for some sequecnce you&#39;re reading &#39;read&#39; by groups &#39;k&#39;. For our example k=3 
+    counts = {}  ##Another empty dictionary 
+    num_kmers = len(read) - k + 1###sets the numbers to read length of the seuqnce -one more than the selected length of our read 
+    for i in range(num_kmers):
+        kmer = read[i:i+k]##reading from 1 through however many we picked (so for example, 1-4 gets you a read of 3)
+        if kmer not in counts:##This count function is pretty much exactly the same!
+            counts[kmer] = 0
+        counts[kmer] += 1
+    return counts
+##Let&#39;s try it!
+
+my_seq1= &quot;ATCATGATCATGATCATC&quot; 
+
+kmers(my_seq1,3)
+
+##If we wanted to count by 4, we could just do this </code></pre>
+<pre><code>## {&#39;ATC&#39;: 4, &#39;TCA&#39;: 3, &#39;CAT&#39;: 3, &#39;ATG&#39;: 2, &#39;TGA&#39;: 2, &#39;GAT&#39;: 2}</code></pre>
+<pre class="python"><code>kmers(my_seq1,4) </code></pre>
+<pre><code>## {&#39;ATCA&#39;: 3, &#39;TCAT&#39;: 3, &#39;CATG&#39;: 2, &#39;ATGA&#39;: 2, &#39;TGAT&#39;: 2, &#39;GATC&#39;: 2, &#39;CATC&#39;: 1}</code></pre>
+<p>##Some basic regex</p>
+<pre class="python"><code>import re
+
+string=&quot;I can learn to code&quot; 
+match=re.match(r&quot;I.*learn&quot;,string)
+match.group()</code></pre>
+<pre><code>## &#39;I can learn&#39;</code></pre>
 
               <hr>
               <div class="related-posts">

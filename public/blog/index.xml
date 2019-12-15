@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Blogs on Chris Turner</title>
+    <title>Blogs on Fiona MacNeill</title>
     <link>/blog/</link>
-    <description>Recent content in Blogs on Chris Turner</description>
+    <description>Recent content in Blogs on Fiona MacNeill</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
     <lastBuildDate>Fri, 13 Dec 2019 00:00:00 +0000</lastBuildDate>
@@ -12,13 +12,25 @@
     
     
     <item>
-      <title>Bloggy blog</title>
+      <title>Python code!!</title>
       <link>/blog/bloggy-blog/</link>
       <pubDate>Fri, 13 Dec 2019 00:00:00 +0000</pubDate>
       
       <guid>/blog/bloggy-blog/</guid>
-      <description> ##This is some fake stuff? is it real??
-x&amp;lt;-2 </description>
+      <description>##Here are some neat things that we’ve been doing in python!!
+###First I&amp;#39;m gonna load reticulate library(reticulate) ##Here’s some basic function coding in python- let’s say you start with a list of numbers or letters and way to do a simple loop printing them, you could do something like this!
+for letter in &amp;quot;pythoniscool&amp;quot;: print(letter) ## p ## y ## t ## h ## o ## n ## i ## s ## c ## o ## o ## l primes=[2,3,5,7,11] for i in primes: print(i) ## 2 ## 3 ## 5 ## 7 ## 11 ##You can also use “for” commands like this:</description>
+    </item>
+    
+    <item>
+      <title>Python code!!</title>
+      <link>/blog/bloggy-blog/</link>
+      <pubDate>Fri, 13 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/bloggy-blog/</guid>
+      <description>##Here are some neat things that we’ve been doing in python!!
+###First I&amp;#39;m gonna load reticulate library(reticulate) ##Here’s some basic function coding in python- let’s say you start with a list of numbers or letters and way to do a simple loop printing them, you could do something like this!
+for letter in &amp;quot;pythoniscool&amp;quot;: print(letter) ## p ## y ## t ## h ## o ## n ## i ## s ## c ## o ## o ## l primes=[2,3,5,7,11] for i in primes: print(i) ## 2 ## 3 ## 5 ## 7 ## 11 ##You can also use “for” commands like this:</description>
     </item>
     
   </channel>
